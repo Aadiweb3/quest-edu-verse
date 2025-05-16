@@ -16,6 +16,7 @@ import DashboardLayout from "./layouts/DashboardLayout";
 import Overview from "./pages/dashboard/Overview";
 import AIChatbox from "./pages/dashboard/AIChatbox";
 import LearningGames from "./pages/dashboard/LearningGames";
+import StudyGroups from "./pages/dashboard/StudyGroups";
 
 const queryClient = new QueryClient();
 
@@ -37,6 +38,7 @@ const App = () => (
               <Route index element={<Overview />} />
               <Route path="ai-chatbox" element={<AIChatbox />} />
               <Route path="learning-games" element={<LearningGames />} />
+              <Route path="groups" element={<StudyGroups />} />
               {/* Other dashboard routes would go here */}
             </Route>
             

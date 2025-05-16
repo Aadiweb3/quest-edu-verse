@@ -26,7 +26,7 @@ import {
 } from "lucide-react";
 
 export function DashboardSidebar() {
-  const { collapsed } = useSidebar();
+  const { open } = useSidebar();
   const location = useLocation();
   const currentPath = location.pathname;
 
@@ -41,14 +41,14 @@ export function DashboardSidebar() {
   
   return (
     <Sidebar
-      className={`${collapsed ? "w-16" : "w-64"} transition-all duration-300`}
-      collapsible
+      className={`${!open ? "w-16" : "w-64"} transition-all duration-300`}
+      collapsible="icon"
     >
       <SidebarContent>
         <div className="p-2">
           <SidebarTrigger className="w-full h-10 flex items-center justify-center">
             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              {collapsed ? (
+              {!open ? (
                 <path d="m9 18 6-6-6-6"/>
               ) : (
                 <path d="m15 18-6-6 6-6"/>
@@ -62,7 +62,7 @@ export function DashboardSidebar() {
             <SidebarMenuButton asChild>
               <NavLink to="/dashboard" end className={getNavCls}>
                 <Layout className="mr-2 h-5 w-5" />
-                {!collapsed && <span>Dashboard</span>}
+                {open && <span>Dashboard</span>}
               </NavLink>
             </SidebarMenuButton>
           </SidebarMenuItem>
@@ -71,7 +71,7 @@ export function DashboardSidebar() {
             <SidebarMenuButton asChild>
               <NavLink to="/dashboard/ai-chatbox" className={getNavCls}>
                 <MessageSquare className="mr-2 h-5 w-5" />
-                {!collapsed && <span>AI Chatbox</span>}
+                {open && <span>AI Chatbox</span>}
               </NavLink>
             </SidebarMenuButton>
           </SidebarMenuItem>
@@ -80,7 +80,7 @@ export function DashboardSidebar() {
             <SidebarMenuButton asChild>
               <NavLink to="/dashboard/study-plan" className={getNavCls}>
                 <Calendar className="mr-2 h-5 w-5" />
-                {!collapsed && <span>Study Plan</span>}
+                {open && <span>Study Plan</span>}
               </NavLink>
             </SidebarMenuButton>
           </SidebarMenuItem>
@@ -89,7 +89,7 @@ export function DashboardSidebar() {
             <SidebarMenuButton asChild>
               <NavLink to="/dashboard/learning-games" className={getNavCls}>
                 <Star className="mr-2 h-5 w-5" />
-                {!collapsed && <span>Learning Games</span>}
+                {open && <span>Learning Games</span>}
               </NavLink>
             </SidebarMenuButton>
           </SidebarMenuItem>
@@ -98,7 +98,7 @@ export function DashboardSidebar() {
             <SidebarMenuButton asChild>
               <NavLink to="/dashboard/groups" className={getNavCls}>
                 <Users className="mr-2 h-5 w-5" />
-                {!collapsed && <span>Study Groups</span>}
+                {open && <span>Study Groups</span>}
               </NavLink>
             </SidebarMenuButton>
           </SidebarMenuItem>
@@ -107,7 +107,7 @@ export function DashboardSidebar() {
             <SidebarMenuButton asChild>
               <NavLink to="/dashboard/video-chat" className={getNavCls}>
                 <Video className="mr-2 h-5 w-5" />
-                {!collapsed && <span>Video Chat</span>}
+                {open && <span>Video Chat</span>}
               </NavLink>
             </SidebarMenuButton>
           </SidebarMenuItem>
@@ -116,7 +116,7 @@ export function DashboardSidebar() {
             <SidebarMenuButton asChild>
               <NavLink to="/dashboard/resources" className={getNavCls}>
                 <Book className="mr-2 h-5 w-5" />
-                {!collapsed && <span>Resources</span>}
+                {open && <span>Resources</span>}
               </NavLink>
             </SidebarMenuButton>
           </SidebarMenuItem>
@@ -128,7 +128,7 @@ export function DashboardSidebar() {
               <SidebarMenuButton asChild>
                 <NavLink to="/dashboard/settings" className={getNavCls}>
                   <Settings className="mr-2 h-5 w-5" />
-                  {!collapsed && <span>Settings</span>}
+                  {open && <span>Settings</span>}
                 </NavLink>
               </SidebarMenuButton>
             </SidebarMenuItem>
@@ -137,7 +137,7 @@ export function DashboardSidebar() {
               <SidebarMenuButton asChild>
                 <NavLink to="/logout" className={getNavCls}>
                   <LogOut className="mr-2 h-5 w-5" />
-                  {!collapsed && <span>Logout</span>}
+                  {open && <span>Logout</span>}
                 </NavLink>
               </SidebarMenuButton>
             </SidebarMenuItem>
