@@ -6,7 +6,7 @@ import { SidebarProvider } from "@/components/ui/sidebar";
 
 const DashboardLayout = () => {
   return (
-    <SidebarProvider collapsedWidth={64}>
+    <SidebarProvider defaultWidth={260} minWidth={64} defaultCollapsed={false}>
       <div className="flex min-h-screen w-full">
         <DashboardSidebar />
         <div className="flex flex-col flex-grow">

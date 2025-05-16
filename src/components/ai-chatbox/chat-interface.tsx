@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Send, Image, Database } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useToast } from "@/hooks/use-toast";
 
 type Message = {
   id: string;
@@ -12,6 +13,9 @@ type Message = {
   timestamp: Date;
   isTyping?: boolean;
 };
+
+// API key for Google's Generative AI
+const API_KEY = "AIzaSyDi78eohOSLX_VP7fAvVJqB8JCaTeMa45o";
 
 export function ChatInterface() {
   const [messages, setMessages] = useState<Message[]>([
@@ -25,6 +29,7 @@ export function ChatInterface() {
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const { toast } = useToast();
 
   useEffect(() => {
     scrollToBottom();
@@ -61,37 +66,79 @@ export function ChatInterface() {
       },
     ]);
 
-    // Simulate AI response delay
-    setTimeout(() => {
-      setMessages((prev) =>
-        prev.filter((message) => message.id !== typingId)
+    try {
+      // Make API request to Google's Generative AI
+      const response = await fetch(
+        "https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${API_KEY}`,
+          },
+          body: JSON.stringify({
+            contents: [
+              {
+                parts: [
+                  {
+                    text: `You are an educational AI assistant helping students with their academic questions. 
+                    Be helpful, informative, and encouraging. The student asks: ${input}`,
+                  },
+                ],
+              },
+            ],
+          }),
+        }
       );
 
-      // Generate mock response based on input
-      let response = "I don't know how to answer that yet.";
-      
-      if (input.toLowerCase().includes("math") || input.toLowerCase().includes("equation")) {
-        response = "For math problems, it's helpful to break them down into steps. Let's work through this equation one step at a time. What specific part are you struggling with?";
-      } else if (input.toLowerCase().includes("history") || input.toLowerCase().includes("date")) {
-        response = "Historical events are easier to remember when you connect them to a timeline or story. Would you like me to explain this period in more detail or create a simple timeline for you?";
-      } else if (input.toLowerCase().includes("science") || input.toLowerCase().includes("biology")) {
-        response = "That's an interesting science question! To understand this concept better, we can think of it as a system with interconnected parts. Would you like me to generate a diagram to visualize this?";
-      } else if (input.toLowerCase().includes("hello") || input.toLowerCase().includes("hi")) {
-        response = "Hello! I'm your AI learning assistant. I can help with subject questions, explain concepts, generate study materials, or just chat about your educational goals. What would you like to explore today?";
-      } else if (input.toLowerCase().includes("help") || input.toLowerCase().includes("can you")) {
-        response = "I'd be happy to help! I can answer questions about academic subjects, explain difficult concepts, help you prepare for tests, or create personalized study materials. What specific help do you need today?";
+      if (!response.ok) {
+        throw new Error(`API request failed with status ${response.status}`);
       }
 
+      const data = await response.json();
+      let aiResponse = "I'm sorry, I couldn't generate a response. Please try again.";
+      
+      if (data.candidates && data.candidates[0]?.content?.parts && data.candidates[0].content.parts[0]?.text) {
+        aiResponse = data.candidates[0].content.parts[0].text;
+      }
+
+      // Remove typing indicator
+      setMessages((prev) => prev.filter((message) => message.id !== typingId));
+
+      // Add AI response
       const aiMessage: Message = {
         id: Date.now().toString(),
-        content: response,
+        content: aiResponse,
         sender: "ai",
         timestamp: new Date(),
       };
 
       setMessages((prev) => [...prev, aiMessage]);
+    } catch (error) {
+      console.error("Error calling AI API:", error);
+      
+      // Remove typing indicator
+      setMessages((prev) => prev.filter((message) => message.id !== typingId));
+      
+      // Add error message
+      const errorMessage: Message = {
+        id: Date.now().toString(),
+        content: "Sorry, I encountered an error. Please try again later.",
+        sender: "ai",
+        timestamp: new Date(),
+      };
+      
+      setMessages((prev) => [...prev, errorMessage]);
+      
+      // Show toast notification
+      toast({
+        title: "Error",
+        description: "Failed to connect to AI service. Please try again later.",
+        variant: "destructive",
+      });
+    } finally {
       setIsLoading(false);
-    }, 2000);
+    }
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
