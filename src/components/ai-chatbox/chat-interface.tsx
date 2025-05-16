@@ -15,7 +15,7 @@ type Message = {
 };
 
 // API key for Google's Generative AI
-const API_KEY = "AIzaSyDi78eohOSLX_VP7fAvVJqB8JCaTeMa45o";
+const API_KEY = "AIzaSyDgKRhoi7bj65WmgXw8JGwNCRqYfG57uAM";
 
 export function ChatInterface() {
   const [messages, setMessages] = useState<Message[]>([
