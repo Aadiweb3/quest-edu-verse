@@ -67,7 +67,16 @@ export function ChatInterface() {
     ]);
 
     try {
-      // Make API request to Google's Generative AI
+      // Prepare conversation history for context
+      const conversationHistory = messages
+        .filter(msg => !msg.isTyping)
+        .slice(-5) // Last 5 messages for context
+        .map(msg => ({
+          role: msg.sender === "user" ? "user" : "model",
+          parts: [{ text: msg.content }]
+        }));
+      
+      // Make API request to Google's Generative AI with improved prompt
       const response = await fetch(
         "https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent",
         {
@@ -79,14 +88,26 @@ export function ChatInterface() {
           body: JSON.stringify({
             contents: [
               {
+                role: "system",
                 parts: [
                   {
-                    text: `You are an educational AI assistant helping students with their academic questions. 
-                    Be helpful, informative, and encouraging. The student asks: ${input}`,
-                  },
-                ],
+                    text: "You are an educational AI assistant called E-Tech AI. You help students with their academic questions in a friendly, informative, and encouraging manner. Your goal is to provide clear explanations and useful information to help students learn."
+                  }
+                ]
               },
+              // Include conversation history for context
+              ...conversationHistory,
+              {
+                role: "user",
+                parts: [{ text: input }]
+              }
             ],
+            generationConfig: {
+              temperature: 0.7,
+              topK: 40,
+              topP: 0.95,
+              maxOutputTokens: 1024,
+            }
           }),
         }
       );
@@ -96,10 +117,18 @@ export function ChatInterface() {
       }
 
       const data = await response.json();
+      console.log("API Response:", data); // Debug log to see the full response
+      
       let aiResponse = "I'm sorry, I couldn't generate a response. Please try again.";
       
-      if (data.candidates && data.candidates[0]?.content?.parts && data.candidates[0].content.parts[0]?.text) {
+      if (data.candidates && 
+          data.candidates[0]?.content?.parts && 
+          data.candidates[0].content.parts.length > 0 && 
+          data.candidates[0].content.parts[0]?.text) {
         aiResponse = data.candidates[0].content.parts[0].text;
+      } else if (data.promptFeedback && data.promptFeedback.blockReason) {
+        // Handle content policy blocks
+        aiResponse = `I'm sorry, I can't provide an answer to that question. (Reason: ${data.promptFeedback.blockReason})`;
       }
 
       // Remove typing indicator
@@ -109,8 +138,8 @@ export function ChatInterface() {
       const aiMessage: Message = {
         id: Date.now().toString(),
         content: aiResponse,
-        sender: "ai",
         timestamp: new Date(),
+        sender: "ai",
       };
 
       setMessages((prev) => [...prev, aiMessage]);
@@ -130,10 +159,10 @@ export function ChatInterface() {
       
       setMessages((prev) => [...prev, errorMessage]);
       
-      // Show toast notification
+      // Show toast notification with more details
       toast({
-        title: "Error",
-        description: "Failed to connect to AI service. Please try again later.",
+        title: "API Error",
+        description: `Failed to connect to AI service: ${error instanceof Error ? error.message : "Unknown error"}`,
         variant: "destructive",
       });
     } finally {
@@ -233,4 +262,11 @@ export function ChatInterface() {
       </div>
     </div>
   );
+
+  function handleKeyDown(e: React.KeyboardEvent<HTMLTextAreaElement>) {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      handleSend();
+    }
+  }
 }
